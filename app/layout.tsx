@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import MetaPixel from '@/components/meta-pixel'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -17,8 +18,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || ''
+
   return (
-    <html lang="en">
+    <html lang="pt-BR">
+      <head>
+        <MetaPixel pixelId={metaPixelId} />
+      </head>
       <body className={`font-sans antialiased`}>
         {children}
         <Analytics />
