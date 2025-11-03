@@ -81,8 +81,40 @@ export default function LeadCaptureModal({
 
     setIsSubmitting(true)
 
-    // Simulate API call (replace with your actual API endpoint)
     try {
+      // Enviar dados para a API
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          planName: planName,
+          planPrice: planPrice,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Se for duplicata (409), mostra erro no campo específico
+        if (response.status === 409 && data.duplicate) {
+          if (data.field === "email") {
+            setErrors({ email: data.error })
+          } else if (data.field === "phone") {
+            setErrors({ phone: data.error })
+          } else {
+            setErrors({ submit: data.error })
+          }
+          setIsSubmitting(false)
+          return
+        }
+        throw new Error(data.error || "Erro ao salvar lead")
+      }
+
       // Track lead event with Meta Pixel
       trackLead({
         content_name: planName,
@@ -90,11 +122,7 @@ export default function LeadCaptureModal({
         currency: "BRL",
       })
 
-      // Simulate delay
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Store lead data (you can send to your backend here)
-      console.log("Lead captured:", formData)
+      console.log("✅ Lead salvo com sucesso:", data)
 
       setIsSuccess(true)
 
@@ -112,8 +140,10 @@ export default function LeadCaptureModal({
         }, 500)
       }, 1000)
     } catch (error) {
-      console.error("Error capturing lead:", error)
-      setErrors({ submit: "Erro ao enviar. Tente novamente." })
+      console.error("❌ Erro ao capturar lead:", error)
+      setErrors({
+        submit: error instanceof Error ? error.message : "Erro ao enviar. Tente novamente.",
+      })
     } finally {
       setIsSubmitting(false)
     }
