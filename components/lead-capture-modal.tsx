@@ -16,7 +16,7 @@ export default function LeadCaptureModal({
   isOpen,
   onClose,
   planName = "Plano Elon Musk",
-  planPrice = "R$ 297",
+  planPrice = "R$ 197",
   whatsappNumber,
 }: LeadCaptureModalProps) {
   const [formData, setFormData] = useState({
@@ -36,25 +36,30 @@ export default function LeadCaptureModal({
       newErrors.name = "Nome é obrigatório"
     } else if (formData.name.trim().length < 3) {
       newErrors.name = "Nome deve ter pelo menos 3 caracteres"
+    } else if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(formData.name)) {
+      newErrors.name = "Nome deve conter apenas letras"
     }
 
     // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
     if (!formData.email.trim()) {
       newErrors.email = "Email é obrigatório"
     } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Email inválido"
+      newErrors.email = "Email inválido (ex: seu@email.com)"
     }
 
-    // Validate phone
-    const phoneRegex = /^[\d\s\-\(\)]+$/
+    // Validate phone (Brazilian format)
     const cleanPhone = formData.phone.replace(/\D/g, "")
     if (!formData.phone.trim()) {
       newErrors.phone = "Telefone é obrigatório"
-    } else if (!phoneRegex.test(formData.phone)) {
-      newErrors.phone = "Telefone inválido"
-    } else if (cleanPhone.length < 10 || cleanPhone.length > 11) {
-      newErrors.phone = "Telefone deve ter 10 ou 11 dígitos"
+    } else if (cleanPhone.length < 10) {
+      newErrors.phone = "Telefone incompleto (mínimo 10 dígitos)"
+    } else if (cleanPhone.length > 11) {
+      newErrors.phone = "Telefone com muitos dígitos (máximo 11)"
+    } else if (cleanPhone.length === 10 && !["2", "3", "4", "5"].includes(cleanPhone[2])) {
+      newErrors.phone = "DDD ou número inválido"
+    } else if (cleanPhone.length === 11 && cleanPhone[2] !== "9") {
+      newErrors.phone = "Celular deve começar com 9"
     }
 
     setErrors(newErrors)
@@ -123,11 +128,38 @@ export default function LeadCaptureModal({
   }
 
   const formatPhoneInput = (value: string) => {
+    // Remove tudo que não é número
     const cleaned = value.replace(/\D/g, "")
-    if (cleaned.length <= 10) {
-      return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3")
+
+    // Limita a 11 dígitos
+    const limited = cleaned.slice(0, 11)
+
+    // Aplica formatação progressiva
+    if (limited.length === 0) return ""
+    if (limited.length <= 2) return `(${limited}`
+    if (limited.length <= 6) return `(${limited.slice(0, 2)}) ${limited.slice(2)}`
+    if (limited.length <= 10) {
+      // Formato fixo: (XX) XXXX-XXXX
+      return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6, 10)}`
     }
-    return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
+    // Formato celular: (XX) 9XXXX-XXXX
+    return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7, 11)}`
+  }
+
+  const validatePhoneRealTime = (phone: string): string => {
+    const cleaned = phone.replace(/\D/g, "")
+
+    if (cleaned.length === 0) return ""
+    if (cleaned.length < 10) return "Continue digitando..."
+    if (cleaned.length === 10 && !["2", "3", "4", "5"].includes(cleaned[2])) {
+      return "⚠️ Verifique o DDD ou número"
+    }
+    if (cleaned.length === 11 && cleaned[2] !== "9") {
+      return "⚠️ Celular deve começar com 9"
+    }
+    if (cleaned.length >= 10) return "✓ Telefone válido"
+
+    return ""
   }
 
   if (!isOpen) return null
@@ -180,11 +212,10 @@ export default function LeadCaptureModal({
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                    errors.name
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.name
                       ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                       : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
-                  }`}
+                    }`}
                   placeholder="João Silva"
                   disabled={isSubmitting}
                 />
@@ -201,11 +232,10 @@ export default function LeadCaptureModal({
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
-                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                    errors.email
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.email
                       ? "border-red-300 focus:border-red-500 focus:ring-red-200"
                       : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
-                  }`}
+                    }`}
                   placeholder="joao@email.com"
                   disabled={isSubmitting}
                 />
@@ -217,20 +247,39 @@ export default function LeadCaptureModal({
                 <label htmlFor="phone" className="block text-sm font-bold text-slate-700 mb-2">
                   Telefone/WhatsApp *
                 </label>
-                <input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", formatPhoneInput(e.target.value))}
-                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                    errors.phone
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                      : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
-                  }`}
-                  placeholder="(11) 98765-4321"
-                  disabled={isSubmitting}
-                />
+                <div className="relative">
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", formatPhoneInput(e.target.value))}
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.phone
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                        : formData.phone && !errors.phone && formData.phone.replace(/\D/g, "").length >= 10
+                          ? "border-green-300 focus:border-green-500 focus:ring-green-200"
+                          : "border-slate-200 focus:border-blue-500 focus:ring-blue-200"
+                      }`}
+                    placeholder="(11) 98765-4321"
+                    disabled={isSubmitting}
+                    maxLength={15}
+                  />
+                  {formData.phone && !errors.phone && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {formData.phone.replace(/\D/g, "").length >= 10 ? (
+                        <span className="text-green-600 text-xl">✓</span>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
                 {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+                {!errors.phone && formData.phone && (
+                  <p
+                    className={`mt-1 text-xs ${formData.phone.replace(/\D/g, "").length >= 10 ? "text-green-600" : "text-slate-500"
+                      }`}
+                  >
+                    {validatePhoneRealTime(formData.phone)}
+                  </p>
+                )}
               </div>
 
               {/* Submit Error */}

@@ -8,7 +8,7 @@ const products = [
     icon: Database,
     name: "Matra CRM",
     description: "Gerencie seus clientes de forma inteligente e escalável",
-    originalPrice: "R$ 297",
+    originalPrice: "R$ 197",
     foguetePrice: "Incluído",
     color: "from-blue-500 to-blue-600",
   },

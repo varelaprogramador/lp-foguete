@@ -18,8 +18,8 @@ export const config = {
   // Pricing
   pricing: {
     planName: "Elon Musk",
-    originalPrice: "R$ 597",
-    promoPrice: "R$ 297",
+    originalPrice: "R$ 197",
+    promoPrice: "R$ 197",
     discount: "50% OFF",
   },
 
@@ -30,6 +30,6 @@ export const config = {
     linkedin: "",
     twitter: "",
   },
-}
+};
 
-export default config
+export default config;
