@@ -3,9 +3,12 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import LeadCaptureModal from "@/components/lead-capture-modal"
+import config from "@/lib/config"
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border shadow-sm">
@@ -48,8 +51,11 @@ export default function Header() {
           </Link>
         </div>
 
-        <button className="hidden md:block px-6 py-2 bg-accent-gradient text-accent-foreground rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all duration-300">
-          {"Quero Assinar Agora"}
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="hidden md:block px-6 py-2 bg-accent-gradient text-accent-foreground rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all duration-300"
+        >
+          Quero Assinar Agora
         </button>
 
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden">
@@ -58,6 +64,15 @@ export default function Header() {
           </svg>
         </button>
       </nav>
+
+      {/* Lead Capture Modal */}
+      <LeadCaptureModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        planName={config.pricing.planName}
+        planPrice={config.pricing.promoPrice}
+        whatsappNumber={config.whatsapp.number}
+      />
     </header>
   )
 }
