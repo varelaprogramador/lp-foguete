@@ -51,12 +51,7 @@ export default function Header() {
           </Link>
         </div>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="hidden md:block px-6 py-2 bg-accent-gradient text-accent-foreground rounded-lg font-semibold hover:shadow-lg hover:shadow-accent/30 transition-all duration-300"
-        >
-          Quero Assinar Agora
-        </button>
+
 
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
