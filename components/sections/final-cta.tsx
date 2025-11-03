@@ -1,9 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import LeadCaptureModal from "@/components/lead-capture-modal"
+import config from "@/lib/config"
 
 export default function FinalCTA() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const sectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -64,14 +67,12 @@ export default function FinalCTA() {
             SoftHub é usado por 10.000+ profissionais para gerenciar seus negócios mais rápido.
           </p>
 
-          <a
-            href="https://wa.me/?text=Ola,%20Quero%20saber%20mais%20do%20foguete%20App!"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setIsModalOpen(true)}
             className="inline-block px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-lg hover:shadow-2xl hover:shadow-blue-600/40 transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
           >
             Falar com um Vendedor Agora
-          </a>
+          </button>
 
           <p className="text-slate-600 text-base leading-relaxed font-medium">
             Resposta em até 2 horas • Suporte dedicado • Sem compromisso
@@ -92,6 +93,15 @@ export default function FinalCTA() {
           </a>
         </div>
       </div>
+
+      {/* Lead Capture Modal */}
+      <LeadCaptureModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        planName="SoftHub"
+        planPrice="Consultar"
+        whatsappNumber={config.whatsapp.number}
+      />
     </section>
   )
 }

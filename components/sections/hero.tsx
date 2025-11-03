@@ -2,10 +2,13 @@
 
 import { Play } from "lucide-react"
 import { useState, useEffect } from "react"
+import LeadCaptureModal from "@/components/lead-capture-modal"
+import config from "@/lib/config"
 
 export default function Hero() {
   const [isVideoOpen, setIsVideoOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -48,15 +51,12 @@ export default function Hero() {
             className={`flex flex-col sm:flex-row gap-4 justify-center transition-all duration-700 delay-300 ${isMounted ? "opacity-100" : "opacity-0"
               }`}
           >
-            <a
-              href="https://wa.me/?text=Ola,%20Quero%20saber%20mais%20do%20foguete%20App!"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setIsModalOpen(true)}
               className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-base hover:shadow-2xl hover:shadow-blue-500/40 transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
             >
-              {"Quero Assinar Agora"}
-            </a>
-
+              Quero Assinar Agora
+            </button>
           </div>
 
           <div
@@ -68,7 +68,14 @@ export default function Hero() {
           </div>
         </div>
 
-
+        {/* Lead Capture Modal */}
+        <LeadCaptureModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          planName={config.pricing.planName}
+          planPrice={config.pricing.promoPrice}
+          whatsappNumber={config.whatsapp.number}
+        />
       </div>
     </section>
   )

@@ -2,6 +2,8 @@
 
 import { Check, Rocket } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import LeadCaptureModal from "@/components/lead-capture-modal"
+import config from "@/lib/config"
 
 const plans = [
   {
@@ -46,11 +48,21 @@ const plans = [
       "Gestor de conta pessoal",
       "Prioridade máxima",
     ],
-    cta: "Agendar Demo",
+    cta: "Falar com Vendedor",
   },
 ]
 
-function PricingCard({ plan, index, isVisible }: { plan: (typeof plans)[0]; index: number; isVisible: boolean }) {
+function PricingCard({
+  plan,
+  index,
+  isVisible,
+  onCtaClick,
+}: {
+  plan: (typeof plans)[0]
+  index: number
+  isVisible: boolean
+  onCtaClick: (planName: string, planPrice: string) => void
+}) {
   return (
     <div
       style={{
@@ -93,11 +105,7 @@ function PricingCard({ plan, index, isVisible }: { plan: (typeof plans)[0]; inde
               ? "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:shadow-blue-500/40 hover:-translate-y-1 active:translate-y-0"
               : "border-2 border-blue-600 text-blue-600 hover:bg-blue-50 active:bg-blue-100"
           }`}
-          onClick={() => {
-            const message = `Ola, Quero saber mais do ${plan.name} App!`
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
-            window.open(whatsappUrl, "_blank")
-          }}
+          onClick={() => onCtaClick(plan.name, plan.price)}
         >
           {plan.cta}
         </button>
@@ -117,6 +125,8 @@ function PricingCard({ plan, index, isVisible }: { plan: (typeof plans)[0]; inde
 
 export default function Pricing() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState({ name: "", price: "" })
   const sectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -134,6 +144,11 @@ export default function Pricing() {
     return () => observer.disconnect()
   }, [])
 
+  const handleCtaClick = (planName: string, planPrice: string) => {
+    setSelectedPlan({ name: planName, price: planPrice })
+    setIsModalOpen(true)
+  }
+
   return (
     <section ref={sectionRef} id="preco" className="relative py-32 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -147,7 +162,7 @@ export default function Pricing() {
 
         <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
           {plans.map((plan, index) => (
-            <PricingCard key={index} plan={plan} index={index} isVisible={isVisible} />
+            <PricingCard key={index} plan={plan} index={index} isVisible={isVisible} onCtaClick={handleCtaClick} />
           ))}
         </div>
 
@@ -156,6 +171,15 @@ export default function Pricing() {
           <p>✓ Satisfação garantida | ✓ Cancelamento instant | ✓ Zero arrependimento</p>
         </div>
       </div>
+
+      {/* Lead Capture Modal */}
+      <LeadCaptureModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        planName={selectedPlan.name}
+        planPrice={selectedPlan.price}
+        whatsappNumber={config.whatsapp.number}
+      />
     </section>
   )
 }
